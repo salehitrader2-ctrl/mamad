@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enum support in Prisma, so Role / RequestStatus are
+// plain strings. Allowed values are enforced in application code:
+//   Role:          "EMPLOYEE" | "MANAGER" | "HR_ADMIN"
+//   RequestStatus: "PENDING" | "APPROVED" | "REJECTED"
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  users     User[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id])
+  fullName     String
+  nationalCode String   @unique
+  password     String
+  role         String   @default("EMPLOYEE")
+  position     String? // جایگاه شغلی فرد در شرکت
+  managerId    String?
+  manager      User?    @relation("ManagerEmployees", fields: [managerId], references: [id])
+  employees    User[]   @relation("ManagerEmployees")
+  leaveBalanceDays Float @default(0)
+  createdAt    DateTime @default(now())
+
+  leaveRequests   LeaveRequest[]
+  loanRequests    LoanRequest[]
+  payslipRequests PayslipRequest[]
+}
+
+model LeaveRequest {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  startDate  DateTime
+  endDate    DateTime
+  days       Float
+  reason     String?
+  status     String        @default("PENDING")
+  reviewNote String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model LoanRequest {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  amount       Int
+  installments Int
+  reason       String?
+  status       String        @default("PENDING")
+  reviewNote   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model PayslipRequest {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  month     Int
+  year      Int
+  status    String        @default("PENDING")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Backend
+backend/.env
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+
+# Frontend build artifacts / PWA
+frontend/dev-dist/
+
+# Editor / OS
+.DS_Store
+*.log
